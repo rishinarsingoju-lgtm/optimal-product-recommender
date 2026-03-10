@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PriceHunt — Compare Prices Across Platforms</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<header>
+  <div class="logo">💰 PriceHunt</div>
+  <p class="tagline">Compare prices. Save more.</p>
+</header>
+
+<main>
+  <section class="search-section">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search for a product..." />
+      <button id="searchBtn" onclick="searchProduct()">
+        <span class="btn-text">Search</span>
+        <span class="btn-loader" style="display:none">⏳</span>
+      </button>
+    </div>
+    <div class="platforms-badge">
+      <span>🛒 Amazon</span>
+    </div>
+  </section>
+
+  <div id="error" class="error-box" style="display:none"></div>
+
+  <section id="bestDeal" style="display:none" class="best-deal">
+    <div class="best-label">🏆 Best Deal Found</div>
+    <div class="best-card" id="bestCard"></div>
+  </section>
+  <section id="resultsSection" style="display:none">
+    <div class="results-header">
+      <h2>All Results <span id="resultCount"></span></h2>
+      <div class="sort-bar">
+        <label>Sort by:</label>
+        <select onchange="sortResults(this.value)">
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="rating">Rating</option>
+        </select>
+      </div>
+    </div>
+    <div id="resultsGrid" class="results-grid"></div>
+  </section>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
