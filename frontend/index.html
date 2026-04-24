@@ -1,61 +1,55 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>rutrf,mhgxdtd — Compare Prices Across Platforms</title>
-  <link rel="stylesheet" href="style.css">
-  <link
-    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap"
-    rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CompareIQ</title>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
-
 <body>
-  <div class="bg-grid"></div>
+  <main class="app-shell">
+    <section class="chat-panel" aria-label="Product search chat">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">CompareIQ</p>
+          <h1>Compare products</h1>
+        </div>
+        <div class="status-pill" id="statusPill">Ready</div>
+      </header>
 
-  <header>
-    <div class="logo">💰 PriceHunt</div>
-    <p class="tagline">Compare prices. Save more.</p>
-  </header>
-
-  <main>
-    <section class="search-section">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Search for a product..." />
-        <button id="searchBtn" onclick="searchProduct()">
-          <span class="btn-text">Search</span>
-          <span class="btn-loader" style="display:none">⏳</span>
-        </button>
-      </div>
-      <div class="platforms-badge">
-        <span>🛒 Amazon</span>
-      </div>
-    </section>
-
-    <div id="error" class="error-box" style="display:none"></div>
-
-    <section id="bestDeal" style="display:none" class="best-deal">
-      <div class="best-label">🏆 Best Deal Found</div>
-      <div class="best-card" id="bestCard"></div>
-    </section>
-    <section id="resultsSection" style="display:none">
-      <div class="results-header">
-        <h2>All Results <span id="resultCount"></span></h2>
-        <div class="sort-bar">
-          <label>Sort by:</label>
-          <select onchange="sortResults(this.value)">
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
-            <option value="rating">Rating</option>
-          </select>
+      <div id="chatLog" class="chat-log" aria-live="polite">
+        <div class="message bot">
+          <p>What are you shopping for?</p>
         </div>
       </div>
+
+      <form id="chatForm" class="chat-form">
+        <input
+          id="chatInput"
+          type="text"
+          autocomplete="off"
+          placeholder="Search phones, laptops, shoes..."
+          maxlength="500"
+          required
+        >
+        <button type="submit">Send</button>
+      </form>
+    </section>
+
+    <section class="results-panel" aria-label="Ranked product results">
+      <div class="results-header">
+        <div>
+          <p class="eyebrow">Recommendation</p>
+          <h2 id="resultsTitle">No search yet</h2>
+        </div>
+        <button id="clearButton" type="button" class="secondary-button">Reset</button>
+      </div>
+
+      <div id="summaryCard" class="summary-card hidden"></div>
       <div id="resultsGrid" class="results-grid"></div>
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <script src="/static/script.js"></script>
 </body>
-
 </html>

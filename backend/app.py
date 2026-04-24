@@ -1,51 +1,89 @@
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
-from scraper import scrape_all
-from database import save_products, get_history
-import os
+from html import escape
+from pathlib import Path
 
-app = Flask(__name__, static_folder='../frontend', static_url_path='')
-CORS(app)
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
-# ✅ Add this route to serve index.html at "/"
-@app.route('/')
-def index():
-    return send_from_directory('../frontend', 'index.html')
+from backend.models.database import get_product, init_db
+from backend.routes.api import router as api_router
 
-@app.route('/search', methods=['POST'])
-def search():
-    data = request.json
-    query = data.get('query', '').strip()
-    if not query:
-        return jsonify({'error': 'Query required'}), 400
-    
-    products = scrape_all(query)
-    if products:
-        save_products(products)
-    
-    products.sort(key=lambda x: x['price'] or float('inf'))
-    best = products[0] if products else None
-    
-    return jsonify({
-        'query': query,
-        'total': len(products),
-        'best': best,
-        'results': products
-    })
 
-@app.route('/history', methods=['GET'])
-def history():
-    query = request.args.get('q', '')
-    items = get_history(query)
-    return jsonify([{
-        'platform': i.platform,
-        'name': i.name,
-        'price': i.price,
-        'rating': i.rating,
-        'url': i.url,
-        'image_url': i.image_url,
-        'searched_at': str(i.searched_at)
-    } for i in items])
+BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = BASE_DIR / "frontend"
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+
+app = FastAPI(
+    title="CompareIQ",
+    description="Zero-cost product comparison and recommendation MVP.",
+    version="0.1.0",
+)
+
+app.include_router(api_router)
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
+
+@app.on_event("startup")
+def on_startup() -> None:
+    init_db()
+
+
+@app.get("/", include_in_schema=False)
+def index() -> FileResponse:
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.get("/health")
+def health() -> dict:
+    return {"status": "ok"}
+
+
+@app.get("/product/{product_id}", response_class=HTMLResponse, name="product_detail")
+def product_detail(product_id: str, request: Request) -> HTMLResponse:
+    product = get_product(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    product_url = str(request.url_for("product_detail", product_id=product_id))
+    title = escape(product["name"])
+    source = escape(product["source"])
+    image = escape(product.get("image") or "")
+    buy_url = escape(product.get("url") or "#")
+    price = product.get("price") or 0
+    rating = product.get("rating")
+    rating_text = f"{rating:.1f}/5" if isinstance(rating, (int, float)) and rating else "Rating unavailable"
+    description = escape(f"{source} product around INR {price:,.0f}. Rating: {rating_text}.")
+
+    html = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{title} | CompareIQ</title>
+  <meta name="description" content="{description}">
+  <meta property="og:title" content="{title}">
+  <meta property="og:image" content="{image}">
+  <meta property="og:description" content="{description}">
+  <meta property="og:url" content="{escape(product_url)}">
+  <meta property="og:type" content="product">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="detail-shell">
+    <a class="back-link" href="/">Back to search</a>
+    <section class="product-detail">
+      <div class="detail-image-wrap">
+        <img src="{image}" alt="{title}" class="detail-image" loading="eager" referrerpolicy="no-referrer">
+      </div>
+      <div class="detail-copy">
+        <span class="source-pill">{source}</span>
+        <h1>{title}</h1>
+        <p class="detail-price">INR {price:,.0f}</p>
+        <p class="detail-meta">{escape(rating_text)}</p>
+        <a class="buy-link" href="{buy_url}" target="_blank" rel="noopener noreferrer">Buy Now</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>"""
+    return HTMLResponse(html)
