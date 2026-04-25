@@ -9,6 +9,7 @@ const clearButton = document.getElementById("clearButton");
 
 let sessionContext = {};
 let lastStructuredQuery = null;
+let isSearching = false;
 
 window.addEventListener("resize", () => {
   window.requestAnimationFrame(scrollChatToEnd);
@@ -17,13 +18,13 @@ window.addEventListener("resize", () => {
 chatForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const message = chatInput.value.trim();
-  if (!message) return;
+  if (!message || isSearching) return;
 
   addMessage(message, "user");
   chatInput.value = "";
 
   try {
-    setBusy("Thinking");
+    setBusy("Thinking...");
     const chatResponse = await postJson("/chat", {
       message,
       context: sessionContext,
@@ -45,6 +46,7 @@ chatForm.addEventListener("submit", async (event) => {
 });
 
 clearButton.addEventListener("click", () => {
+  if (isSearching) return;
   sessionContext = {};
   lastStructuredQuery = null;
   chatLog.innerHTML = "";
@@ -57,7 +59,8 @@ clearButton.addEventListener("click", () => {
 });
 
 async function runSearch(structuredQuery) {
-  setBusy("Scraping");
+  isSearching = true;
+  setBusy("Scraping...");
   resultsTitle.textContent = "Searching stores";
   resultsGrid.innerHTML = "";
   summaryCard.classList.add("hidden");
@@ -75,10 +78,11 @@ async function runSearch(structuredQuery) {
     addMessage(`${errorText} Try a more specific product or budget.`, "bot error");
     resultsTitle.textContent = "No results";
     setReady();
+    isSearching = false;
     return;
   }
 
-  setBusy("Ranking");
+  setBusy("Ranking...");
   const rankResponse = await postJson("/rank", {
     structured_query: structuredQuery,
     products: searchResponse.products,
@@ -86,8 +90,9 @@ async function runSearch(structuredQuery) {
   });
 
   renderResults(rankResponse.products, structuredQuery);
-  addMessage("Done. Here are the best matches.", "bot");
+  addMessage("Done. Here are the best matches. 🎯", "bot");
   setReady();
+  isSearching = false;
 }
 
 async function postJson(url, payload) {
@@ -183,12 +188,14 @@ function setBusy(label) {
   statusPill.textContent = label;
   statusPill.classList.add("busy");
   chatInput.disabled = true;
+  clearButton.disabled = true;
 }
 
 function setReady() {
   statusPill.textContent = "Ready";
   statusPill.classList.remove("busy");
   chatInput.disabled = false;
+  clearButton.disabled = false;
   chatInput.focus();
 }
 

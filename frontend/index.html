@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CompareIQ</title>
+  <meta name="description" content="CompareIQ - Compare products intelligently. Get AI-powered recommendations from Amazon and Flipkart.">
+  <title>CompareIQ - Smart Product Recommendations</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
@@ -12,14 +13,14 @@
       <header class="topbar">
         <div>
           <p class="eyebrow">CompareIQ</p>
-          <h1>Compare products</h1>
+          <h1>Find the best</h1>
         </div>
-        <div class="status-pill" id="statusPill">Ready</div>
+        <div class="status-pill" id="statusPill" aria-live="polite" aria-atomic="true">Ready</div>
       </header>
 
-      <div id="chatLog" class="chat-log" aria-live="polite">
+      <div id="chatLog" class="chat-log" aria-live="polite" aria-label="Chat messages">
         <div class="message bot">
-          <p>What are you shopping for?</p>
+          <p>Hi! What are you shopping for? Tell me what you're looking for and I'll find the best deals.</p>
         </div>
       </div>
 
@@ -28,11 +29,12 @@
           id="chatInput"
           type="text"
           autocomplete="off"
-          placeholder="Search phones, laptops, shoes..."
+          placeholder="E.g., 'best phone under 30000' or 'gaming laptop'"
           maxlength="500"
           required
+          aria-label="Search products"
         >
-        <button type="submit">Send</button>
+        <button type="submit" aria-label="Send search">Send</button>
       </form>
     </section>
 
@@ -42,11 +44,11 @@
           <p class="eyebrow">Recommendation</p>
           <h2 id="resultsTitle">No search yet</h2>
         </div>
-        <button id="clearButton" type="button" class="secondary-button">Reset</button>
+        <button id="clearButton" type="button" class="secondary-button" aria-label="Reset search">Reset</button>
       </div>
 
-      <div id="summaryCard" class="summary-card hidden"></div>
-      <div id="resultsGrid" class="results-grid"></div>
+      <div id="summaryCard" class="summary-card hidden" role="region" aria-label="Top recommended product"></div>
+      <div id="resultsGrid" class="results-grid" role="region" aria-label="Product recommendations"></div>
     </section>
   </main>
 
